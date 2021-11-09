@@ -1,5 +1,10 @@
-# ssc_arduino
+# DESC
 code for the hardware part of the project "smart shopping cart"
 
-#process
-some details about the C code <goes here>
+# EXTERNAL LIBRARIES
+download these libraries and add it to your code
+
+## RFID 
+- "**AddicoreRFID.h**" from "https://github.com/addicore/AddicoreRFID" 
+```# include "AddicoreRFID.h"```
+
