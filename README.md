@@ -7,6 +7,8 @@ download these libraries and add it to your code
 ## RFID 
 "**MFRC522**" from "https://github.com/miguelbalboa/rfid"
 
+## LOAD CELL
+"" from "https://github.com/olkal/HX711_ADC"
 
-```# include "AddicoreRFID.h"```
+
 
