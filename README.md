@@ -8,7 +8,7 @@ download these libraries and add it to your code
 "**MFRC522**" from "https://github.com/miguelbalboa/rfid"
 
 ## LOAD CELL
-"" from "https://github.com/olkal/HX711_ADC"
+"**HX711_ADC**" from "https://github.com/olkal/HX711_ADC"
 
 
 
