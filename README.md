@@ -1,5 +1,14 @@
-# ssc_arduino
+# DESC
 code for the hardware part of the project "smart shopping cart"
 
-#process
-some details about the C code <goes here>
+# EXTERNAL LIBRARIES
+download these libraries and add it to your code
+
+## RFID 
+"**MFRC522**" from "https://github.com/miguelbalboa/rfid"
+
+## LOAD CELL
+"" from "https://github.com/olkal/HX711_ADC"
+
+
+
