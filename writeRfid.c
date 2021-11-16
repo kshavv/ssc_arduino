@@ -34,10 +34,10 @@ int block_price=6;
 
 //*********************SET PRODUCT DETAILS HERE******************************/
 //THESE DETAILS WILL GET STORED ON THE RFID CARD AT BLOCK LOCATION  2,4,5 repectively.                       
-byte product_id[16]="<ADD PRODUCT ID>";
-byte product_name[16]="<ADD PRODUCT NAME>";
-byte product_weight[16]="<ADD PRODUCT WEIGHT>";
-byte product_price[16]="<ADD PRODUCT PRICE>";
+byte product_id[16]="<PRODid>";
+byte product_name[16]="<PRODname>";
+byte product_weight[16]="<PRODweight>";
+byte product_price[16]="<PRODprice>";
 
 byte readbackblock[18];//This array is used for reading out a block.
 
