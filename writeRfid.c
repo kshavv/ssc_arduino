@@ -1,4 +1,3 @@
-
 /**
  *  **DATA FORMAT TO BE STORED ON EACH CARD**
  *  product_id
@@ -18,8 +17,8 @@ MFRC522::MIFARE_Key key;//create a MIFARE_Key struct named 'key', which will hol
 void setup(){
   Serial.begin(57600);        
   SPI.begin();               
-  mfrc522.PCD_Init();   // Init MFRC522 card
-  Serial.println("Scan a MIFARE Classic card");
+  mfrc522.PCD_Init();   // Init RFID reader 
+  Serial.println("PUT YOUR RFID CARD NEAR THE SCANNER....");
  
   // Preparing the security key for the read and write functions - all six key bytes are set to 0xFF at chip delivery from the factory.
   //storing  the key value to "0xFF" for new key otherwise, we would need to know the key to be able to access it
@@ -28,16 +27,17 @@ void setup(){
 }
 
 
-int block_id=2;//dont choose trailer blocks((block_no+1)%4)
+int block_id=2;//dont choose trailer blocks((block_no+1)%4==0)
 int block_name=4;
 int block_weight=5;
-
+int block_price=6;
 
 //*********************SET PRODUCT DETAILS HERE******************************/
-//THIS DETAIL WILL GET STORED ON THE RFID AT BLOCK LOCATION  2,4,5 repectively                       
-byte product_id[16]="ss2301";
-byte product_name[16]="stapler";
-byte product_weight[16]="9";
+//THESE DETAILS WILL GET STORED ON THE RFID CARD AT BLOCK LOCATION  2,4,5 repectively.                       
+byte product_id[16]="<ADD PRODUCT ID>";
+byte product_name[16]="<ADD PRODUCT NAME>";
+byte product_weight[16]="<ADD PRODUCT WEIGHT>";
+byte product_price[16]="<ADD PRODUCT WEIGHT>";
 
 byte readbackblock[18];//This array is used for reading out a block.
 
@@ -57,6 +57,7 @@ void loop()
  writeBlock(block_id, product_id);
  writeBlock(block_name, product_name); 
  writeBlock(block_weight, product_weight);  
+ writeBlock(block_price, product_price);
  Serial.println("data updated");
  readBlock(block_id, readbackblock);//read the block back
  Serial.print("read block: ");
@@ -65,6 +66,13 @@ void loop()
  
  Serial.println("");
    
+ readBlock(block_name, readbackblock);//read the block back
+ Serial.print("read block: ");
+ for (int j=0 ; j<16 ; j++)
+   Serial.write (readbackblock[j]);
+
+ Serial.println("");
+
  readBlock(block_name, readbackblock);//read the block back
  Serial.print("read block: ");
  for (int j=0 ; j<16 ; j++)
