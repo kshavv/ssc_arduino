@@ -43,17 +43,9 @@ byte readbackblock[18];//This array is used for reading out a block.
 
 void loop()
 {
-  //establishing contact with a tag/card
-  if ( ! mfrc522.PICC_IsNewCardPresent()) {
-    return;//return to the start of the loop
-  }
-  
-  // Select one of the cards
-  if ( ! mfrc522.PICC_ReadCardSerial()) {
-    return;//something went wrong and return to the start of the loop
-  }  
- Serial.println("card selected");
- 
+  if(!rfid_checks())
+    return; //return to the start of loop
+
  writeBlock(block_id, product_id);
  writeBlock(block_name, product_name); 
  writeBlock(block_weight, product_weight);  
@@ -137,4 +129,20 @@ int readBlock(int blockNumber, byte arrayAddress[])
           Serial.println(mfrc522.GetStatusCodeName(status));
           return 4;//return "4" as error message
   }
+}
+
+
+/**
+ * checks if cards is getting read properly
+ */
+bool rfid_checks(){
+  // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
+  if ( ! mfrc522.PICC_IsNewCardPresent())
+    return false;
+  
+  // Select one of the cards
+  if ( ! mfrc522.PICC_ReadCardSerial())
+    return false;
+  Serial.println(F("**Card Detected:**"));
+  return true;
 }
