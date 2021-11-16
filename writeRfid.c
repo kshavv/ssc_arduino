@@ -18,8 +18,8 @@ MFRC522::MIFARE_Key key;//create a MIFARE_Key struct named 'key', which will hol
 void setup(){
   Serial.begin(57600);        
   SPI.begin();               
-  mfrc522.PCD_Init();   // Init MFRC522 card
-  Serial.println("Scan a MIFARE Classic card");
+  mfrc522.PCD_Init();   // Init RFID reader 
+  Serial.println("PUT YOUR RFID CARD NEAR THE SCANNER....");
  
   // Preparing the security key for the read and write functions - all six key bytes are set to 0xFF at chip delivery from the factory.
   //storing  the key value to "0xFF" for new key otherwise, we would need to know the key to be able to access it
@@ -34,10 +34,10 @@ int block_weight=5;
 
 
 //*********************SET PRODUCT DETAILS HERE******************************/
-//THIS DETAIL WILL GET STORED ON THE RFID AT BLOCK LOCATION  2,4,5 repectively                       
-byte product_id[16]="ss2301";
-byte product_name[16]="stapler";
-byte product_weight[16]="9";
+//THESE DETAILS WILL GET STORED ON THE RFID CARD AT BLOCK LOCATION  2,4,5 repectively.                       
+byte product_id[16]="<ADD PRODUCT ID>";
+byte product_name[16]="<ADD PRODUCT NAME>";
+byte product_weight[16]="<ADD PRODUCT WEIGHT>";
 
 byte readbackblock[18];//This array is used for reading out a block.
 
