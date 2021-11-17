@@ -57,13 +57,15 @@ void setup() {
     Serial.println("Startup is complete");
   }
 
-  Serial.println("--INTITIALIZING SCANNER--");
-  initialize_scanner();
+
   
 }
 
 void loop() {
 
+  Serial.println("--INTITIALIZING SCANNER--");
+  initialize_scanner();
+  
   if(!rfid_checks())
     return; //return to the start of the loop
     
@@ -81,8 +83,13 @@ void loop() {
   Serial.print("average load cell reading :"); Serial.println(averageReading);
  
       
+  
+  fetchedPid="";
+  fetchedName="";
+  fetchedWeight="";
+  fetchedPrice="";
+  
   //send weight and uid to database for further operations
-
 }
 
 /*
@@ -95,7 +102,7 @@ void get_load_cell_reading(){
   Serial.println("put some weight");
   while(1){
     while(!LoadCell.update());
-    if(LoadCell.getData()>0.5)
+    if(LoadCell.getData()>1)
       break;
   }
   Serial.println("ready");
@@ -134,6 +141,7 @@ bool rfid_checks(){
   if ( ! mfrc522.PICC_ReadCardSerial())
     return false;
   Serial.println(F("**Card Detected:**"));
+  Serial.println("place your RFID card");
   return true;
 }
 
@@ -156,6 +164,7 @@ int readBlock(int blockNumber, byte arrayAddress[],String& store)
   
   //reading a block       
   byte buffersize = 18;//size of the buffer on which we are going to write
+  MFRC522::StatusCode status;
   status = mfrc522.MIFARE_Read(blockNumber, arrayAddress, &buffersize);
   if (status != MFRC522::STATUS_OK) {
           Serial.print("MIFARE_read() failed: ");
@@ -175,6 +184,5 @@ int readBlock(int blockNumber, byte arrayAddress[],String& store)
 void initialize_scanner(){
   mfrc522.PCD_Init();     //INITIATING RFID SCANNER
   for (byte i = 0; i < 6; i++) key.keyByte[i] = 0xFF; //setting the key for data access(default key is "FF")
-  Serial.println("place your RFID card");
   
 }
