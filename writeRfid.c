@@ -34,10 +34,10 @@ int block_price=6;
 
 //*********************SET PRODUCT DETAILS HERE******************************/
 //THESE DETAILS WILL GET STORED ON THE RFID CARD AT BLOCK LOCATION  2,4,5 repectively.                       
-byte product_id[16]="<PRODid>";
-byte product_name[16]="<PRODname>";
-byte product_weight[16]="<PRODweight>";
-byte product_price[16]="<PRODprice>";
+byte product_id[16]="ss1010";
+byte product_name[16]="stapler";
+byte product_weight[16]="10";
+byte product_price[16]="50";
 
 byte readbackblock[18];//This array is used for reading out a block.
 
@@ -51,28 +51,29 @@ void loop()
  writeBlock(block_weight, product_weight);  
  writeBlock(block_price, product_price);
  Serial.println("data updated");
- readBlock(block_id, readbackblock);//read the block back
+ 
+ readBlock(block_id, readbackblock);
  Serial.print("read block: ");
  for (int j=0 ; j<16 ; j++)
    Serial.write (readbackblock[j]);
  
  Serial.println("");
    
- readBlock(block_name, readbackblock);//read the block back
+ readBlock(block_name, readbackblock);
  Serial.print("read block: ");
  for (int j=0 ; j<16 ; j++)
    Serial.write (readbackblock[j]);
 
  Serial.println("");
 
- readBlock(block_name, readbackblock);//read the block back
+ readBlock(block_weight, readbackblock);
  Serial.print("read block: ");
  for (int j=0 ; j<16 ; j++)
    Serial.write (readbackblock[j]);
 
  Serial.println("");
    
- readBlock(block_weight, readbackblock);//read the block back
+ readBlock(block_price, readbackblock);
  Serial.print("read block: ");
  for (int j=0 ; j<16 ; j++)
    Serial.write (readbackblock[j]);
