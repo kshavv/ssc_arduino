@@ -57,13 +57,12 @@ void setup() {
     Serial.println("Startup is complete");
   }
 
-
+  Serial.println("place your RFID card");
   
 }
 
 void loop() {
 
-  Serial.println("--INTITIALIZING SCANNER--");
   initialize_scanner();
   
   if(!rfid_checks())
@@ -88,9 +87,27 @@ void loop() {
   fetchedName="";
   fetchedWeight="";
   fetchedPrice="";
+
   
+  verify_weight();
   //send weight and uid to database for further operations
+  Serial.println("place your RFID card");
 }
+
+
+void verify_weight(){
+  if(abs(averageReading-fetchedWeight)<3)
+  {
+    Serial.println("ITEM_PLACED_SUCCESSFULLY");
+    return true;
+  }
+  else{
+    Serial.println("WEIGHT DO NOT MATCH.PLS SCAN THE ITEM AGAIN");
+    return false;
+  }
+}
+
+
 
 /*
  * reads load cell reading and
@@ -117,7 +134,6 @@ void get_load_cell_reading(){
     if(i<20)
       continue;
     float reading = LoadCell.getData();
-    Serial.println(reading);
     loadCellReadings[i-20]=reading;
   }
    
@@ -141,7 +157,7 @@ bool rfid_checks(){
   if ( ! mfrc522.PICC_ReadCardSerial())
     return false;
   Serial.println(F("**Card Detected:**"));
-  Serial.println("place your RFID card");
+ 
   return true;
 }
 
@@ -155,7 +171,8 @@ int readBlock(int blockNumber, byte arrayAddress[],String& store)
   byte trailerBlock=largestModulo4Number+3;
 
   //authentication of the desired block for access
-  byte status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
+  MFRC522::StatusCode status;
+  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
   if (status != MFRC522::STATUS_OK) {
          Serial.print("PCD_Authenticate() failed (read): ");
          Serial.println(mfrc522.GetStatusCodeName(status));
@@ -164,7 +181,7 @@ int readBlock(int blockNumber, byte arrayAddress[],String& store)
   
   //reading a block       
   byte buffersize = 18;//size of the buffer on which we are going to write
-  MFRC522::StatusCode status;
+  
   status = mfrc522.MIFARE_Read(blockNumber, arrayAddress, &buffersize);
   if (status != MFRC522::STATUS_OK) {
           Serial.print("MIFARE_read() failed: ");
