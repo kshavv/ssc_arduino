@@ -1,4 +1,3 @@
-
 #include <HX711_ADC.h>
 #include <SPI.h>
 #include <MFRC522.h>  
@@ -19,7 +18,7 @@ MFRC522::MIFARE_Key key; // Security key for accessing data.
 
 
 //control variable
-bool halt=0;
+bool rfidDetected=false;
 float averageReading=0.0;
 
 //RFID variables
@@ -38,13 +37,12 @@ byte readbuffer[18];
 
 
 void setup() {
-  
   Serial.begin(57600); delay(10);
   SPI.begin(); 
 
   Serial.println("--INTITIALIZING LOAD CELL--");
   LoadCell.begin();
-  float calibrationValue=260.24;
+  float calibrationValue=217.63;
   unsigned long stabilizingtime = 2000; // preciscion right after power-up can be improved by adding a few seconds of stabilizing time
   boolean _tare = true; //set this to false if you don't want tare to be performed in the next step
   LoadCell.start(stabilizingtime, _tare);
@@ -56,47 +54,58 @@ void setup() {
     LoadCell.setCalFactor(calibrationValue);
     Serial.println("Startup is complete");
   }
-
-  Serial.println("place your RFID card");
-  
+  Serial.println("place the RFID tag near sensor");
+  LoadCell.tareNoDelay();
 }
 
 void loop() {
-
-  initialize_scanner();
   
+  initialize_scanner();
   if(!rfid_checks())
     return; //return to the start of the loop
     
   readBlock(block_id,readbuffer,fetchedPid);
+  Serial.print("Product ID: ");
   Serial.println(fetchedPid);
   readBlock(block_name,readbuffer,fetchedName);
+  Serial.print("Product Name: ");
   Serial.println(fetchedName);
   readBlock(block_weight,readbuffer,fetchedWeight);
+  Serial.print("Product Weight: ");
   Serial.println(fetchedWeight);
   readBlock(block_price,readbuffer,fetchedPrice);
+  Serial.print("Product Price: ");
   Serial.println(fetchedPrice);
-  
-  get_load_cell_reading();
 
+  if(rfidDetected){
+    bool check=get_load_cell_reading();
+    if(!check)
+    {
+      Serial.println("place the RFID tag near sensor");  
+      return;
+    }
+  }
+  rfidDetected=false;
   Serial.print("average load cell reading :"); Serial.println(averageReading);
- 
-      
-  
+
+  verify_weight();
+   
   fetchedPid="";
   fetchedName="";
   fetchedWeight="";
   fetchedPrice="";
 
   
-  verify_weight();
+  
+  
   //send weight and uid to database for further operations
-  Serial.println("place your RFID card");
+  Serial.println("place the RFID tag near sensor");
 }
 
 
 void verify_weight(){
-  if(abs(averageReading-fetchedWeight)<3)
+  float x=fetchedWeight.toFloat();
+  if(abs(averageReading-x)<3)
   {
     Serial.println("ITEM_PLACED_SUCCESSFULLY");
     return true;
@@ -108,13 +117,44 @@ void verify_weight(){
 }
 
 
-
 /*
  * reads load cell reading and
  * updates averageReading of the   
  * item placed
  */
-void get_load_cell_reading(){  
+bool get_load_cell_reading(){  
+  byte i=0;
+  float reading;
+  
+  //check if load is already present
+  Serial.print("checking");
+  for(i=0;i<10;i++)
+  {
+    Serial.print(".");
+    delay(200);
+    while(!LoadCell.update());
+    reading=LoadCell.getData();
+    if(reading>3){
+      Serial.println("");
+      Serial.println("**unscanned weight is present!!!**");
+      Serial.print("PLEASE REMOVE THE WEIGHT");
+      delay(1000);
+      while(1){
+        delay(400);
+        Serial.print(".");
+        while(!LoadCell.update());
+        reading=LoadCell.getData();
+//        if(reading<3)
+//          break; 
+      }
+      Serial.println("");
+      return false;
+    }
+      
+  }
+
+  Serial.println("");
+  
   LoadCell.tareNoDelay();
   Serial.println("put some weight");
   while(1){
@@ -125,7 +165,7 @@ void get_load_cell_reading(){
   Serial.println("ready");
 
   float loadCellReadings[10]; 
-  byte i=0;
+  
 
   for(i=0;i<30;i++)
   {        
@@ -133,14 +173,17 @@ void get_load_cell_reading(){
     while(!LoadCell.update());
     if(i<20)
       continue;
-    float reading = LoadCell.getData();
+    reading = LoadCell.getData();
     loadCellReadings[i-20]=reading;
   }
+
+  LoadCell.tareNoDelay();
    
   for(i=0;i<10;i++)
     averageReading+=loadCellReadings[i];
  
   averageReading/=10; 
+  return true;
 }
 
 
@@ -157,7 +200,7 @@ bool rfid_checks(){
   if ( ! mfrc522.PICC_ReadCardSerial())
     return false;
   Serial.println(F("**Card Detected:**"));
- 
+  rfidDetected=true;
   return true;
 }
 
