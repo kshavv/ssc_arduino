@@ -141,12 +141,12 @@ bool get_load_cell_reading(){
   float reading;
   
   LoadCell.tareNoDelay();
-  Serial.println("put some weight");
+  Serial.println("put the item on the cart");
   
   while(1){//stop the process till the load cell detects some weight
     while(!LoadCell.update());
     if(LoadCell.getData()>1){
-      Serial.println("ready");
+      Serial.println("*WEIGHT DETECTED*");
       break;
     }
   }
@@ -178,18 +178,20 @@ bool verify_weight(param){
   if(param==0)
   {
     for(i=0;i<10;i++)
-    {        
+    {  
+      delay(50);     
       while(!LoadCell.update());
       if(LoadCell.getData()>2){
         if(!halt){ //'if' statement ensures that these will get printed only once
           Serial.println("**unscanned weight is present!!!**");
-          delay(300);
+          delay(200);
           Serial.print("Please Remove the weight");
         }
         else
           print(".");
         
         halt=1;
+        //beep(big);
         return false;
       }
     }
@@ -204,14 +206,13 @@ bool verify_weight(param){
     Serial.println("ITEM_PLACED_SUCCESSFULLY");
     totalWeight+=averageReading;
     //send acknowledgement and fetched product ID to esp*************************************************************************************************
+    LoadCell.tareNoDelay();
     return true;
   }
   Serial.println("WEIGHT DO NOT MATCH.PLS SCAN THE ITEM AGAIN");
   return false;
    
  }
-
-
 
 
 /*
