@@ -6,8 +6,11 @@
 //pins:
 const int HX711_dout = 4; //mcu > HX711 dout pin
 const int HX711_sck = 6; //mcu > HX711 sck pin
+const int buzzerPin=7;
 #define RST_PIN 9  //reset pin(RFID)
 #define SS_PIN 10 //slave select pin(RFID)
+
+
 
 //CONTROL VARIABLES
 const bool DISABLE_LOAD_CELL=false;
@@ -63,7 +66,7 @@ void loop() {
   if(!halt)
   {
     if(rfid_checks()){
-      //beep("small");
+      beep(300,200);
       extract_data_from_tags();
 
       if(!DISABLE_LOAD_CELL){
@@ -200,7 +203,6 @@ bool verify_weight(byte param){
           Serial.print(".");
         halt=true;
         poke=true;
-        //beep(big);
         return false;
       }
     }
@@ -226,6 +228,7 @@ bool verify_weight(byte param){
 
     return true;
   }
+  beep(1000,1000);
   Serial.println("WEIGHT DO NOT MATCH.PLS try SCANNING AGAIN");
   return false;
    
@@ -287,5 +290,15 @@ void initialize_scanner(){
   fetchedWeight="";
   fetchedPrice="";
 
+}
+
+/*
+ * activates the buzzer 
+ * with the passed frequency
+ * and time
+ */
+void beep(int hz,int d){
+
+  tone(buzzerPin,hz,d);
   
 }
