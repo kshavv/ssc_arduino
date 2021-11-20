@@ -2,14 +2,23 @@
 #include <SPI.h>
 #include <MFRC522.h>
 
+
+//pins:
+const int HX711_dout = 4; //mcu > HX711 dout pin
+const int HX711_sck = 6; //mcu > HX711 sck pin
+#define RST_PIN 9  //reset pin(RFID)
+#define SS_PIN 10 //slave select pin(RFID)
+
 //CONTROL VARIABLES
 const bool DISABLE_LOAD_CELL=false;
-bool halt=0;
+bool halt=false;
+bool poke=false;
 
 //load Cell related
 float currentWeight;
 float totalWeight;
 float averageReading;
+
 
 //RFID variables
 byte block_id=2;
@@ -53,20 +62,20 @@ void loop() {
 
   if(!halt)
   {
-    if(rfid_checks){
+    if(rfid_checks()){
       //beep("small");
       extract_data_from_tags();
 
       if(!DISABLE_LOAD_CELL){
         get_load_cell_reading();
         Serial.print("average load cell reading : "); Serial.println(averageReading);
-        verify_weight(1);
+        if(verify_weight(1))
+          LoadCell.tareNoDelay();
       }  
+      halt=true; 
     }
-    halt=true; 
+    
   }
-
-  
 
 }
 
@@ -77,7 +86,7 @@ void loop() {
  * designated variable also logs 
  * the values for debugging
  */
-extract_data_from_tags(){
+void extract_data_from_tags(){
   
   readBlock(block_id,readbuffer,fetchedPid);
   Serial.print("Product ID: ");
@@ -162,7 +171,6 @@ bool get_load_cell_reading(){
     loadCellReadings[i-20]=reading;
   }
   
-  LoadCell.tareNoDelay(); 
   for(i=0;i<10;i++)
     averageReading+=loadCellReadings[i];
   averageReading/=10;
@@ -174,9 +182,10 @@ bool get_load_cell_reading(){
  * param=0(verifies unscanned weight)
  * param=1(verifies scanned weight)
  */
-bool verify_weight(param){
+bool verify_weight(byte param){
   if(param==0)
   {
+    byte i;
     for(i=0;i<10;i++)
     {  
       delay(50);     
@@ -184,19 +193,24 @@ bool verify_weight(param){
       if(LoadCell.getData()>2){
         if(!halt){ //'if' statement ensures that these will get printed only once
           Serial.println("**unscanned weight is present!!!**");
-          delay(200);
+          delay(300);
           Serial.print("Please Remove the weight");
         }
         else
-          print(".");
-        
-        halt=1;
+          Serial.print(".");
+        halt=true;
+        poke=true;
         //beep(big);
         return false;
       }
     }
-    halt=0;
-    Serial.println("");
+    if(poke){
+      Serial.println("");
+      Serial.println("Weight verified.Ready to scan");
+    }
+      
+    poke=false;
+    halt=false;
     return true;    
   }
     
@@ -207,9 +221,12 @@ bool verify_weight(param){
     totalWeight+=averageReading;
     //send acknowledgement and fetched product ID to esp*************************************************************************************************
     LoadCell.tareNoDelay();
+    delay(200);
+    Serial.println("");Serial.println("");
+
     return true;
   }
-  Serial.println("WEIGHT DO NOT MATCH.PLS SCAN THE ITEM AGAIN");
+  Serial.println("WEIGHT DO NOT MATCH.PLS try SCANNING AGAIN");
   return false;
    
  }
