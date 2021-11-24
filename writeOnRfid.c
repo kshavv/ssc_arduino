@@ -3,6 +3,7 @@
  *  product_id
  *  product_name
  *  product_weight
+ *  product_status
  */ 
 
 #include <SPI.h>
@@ -31,13 +32,15 @@ int block_id=2;//dont choose trailer blocks((block_no+1)%4==0)
 int block_name=4;
 int block_weight=5;
 int block_price=6;
+int block_status=8;
 
 //*********************SET PRODUCT DETAILS HERE******************************/
 //THESE DETAILS WILL GET STORED ON THE RFID CARD AT BLOCK LOCATION  2,4,5 repectively.                       
-byte product_id[16]="ss1010";
-byte product_name[16]="stapler";
-byte product_weight[16]="10";
-byte product_price[16]="50";
+byte product_id[16]="sm2115";
+byte product_name[16]="marker";
+byte product_weight[16]="17";
+byte product_price[16]="20";
+byte product_status[16]="1";
 
 byte readbackblock[18];//This array is used for reading out a block.
 
@@ -50,6 +53,7 @@ void loop()
  writeBlock(block_name, product_name); 
  writeBlock(block_weight, product_weight);  
  writeBlock(block_price, product_price);
+ writeBlock(block_status, product_status);
  Serial.println("data updated");
  
  readBlock(block_id, readbackblock);
@@ -74,6 +78,13 @@ void loop()
  Serial.println("");
    
  readBlock(block_price, readbackblock);
+ Serial.print("read block: ");
+ for (int j=0 ; j<16 ; j++)
+   Serial.write (readbackblock[j]);
+
+ Serial.println("");
+ 
+ readBlock(block_status, readbackblock);
  Serial.print("read block: ");
  for (int j=0 ; j<16 ; j++)
    Serial.write (readbackblock[j]);
