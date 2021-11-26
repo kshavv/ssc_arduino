@@ -15,7 +15,6 @@ const int buzzerPin=7;
 //CONTROL VARIABLES
 const bool DISABLE_LOAD_CELL=false;
 bool halt=true;
-bool poke=true;
 
 //load Cell related
 float totalWeight;
@@ -60,13 +59,7 @@ void setup() {
 
 void loop() {
   
-  initialize_scanner();
-
-  if(DISABLE_LOAD_CELL)
-  {
-    halt=false;
-  }
-  
+  initialize_scanner();  
   if(!DISABLE_LOAD_CELL)
     verify_weight(0);
 
@@ -93,17 +86,13 @@ void extract_data_from_tags(){
     readBlock(block_name,readbuffer,fetchedName);
     readBlock(block_weight,readbuffer,fetchedWeight);
     readBlock(block_price,readbuffer,fetchedPrice);
-    
-      
+         
     if(fetchedStatus=="scanned"){//condition for removing item from the cart (again scan the rfid) 
         byte productStatus[16]="unscanned";
         writeBlock(block_status,productStatus);
         beep(10,1000);    
-        delay(200);
         //send product Id to esp for deleting item (with ack to delete )......................................
-        values=("REMOVE,"+fetchedPid);
-        Serial.print(values);
-        delay(200);
+        send_to_esp("REMOVE",fetchedPid);
         return;
     }
 
@@ -122,65 +111,9 @@ void extract_data_from_tags(){
 }
 
 
-/*
-*write on block 8 and 
-*mark the product as bought
-*(used for checks at the end of shopping)
-*/
-int writeBlock(int blockNumber, byte arrayAddress[]) 
-{
-  int largestModulo4Number=blockNumber/4*4;
-  int trailerBlock=largestModulo4Number+3;
-  //checking for trailer block
-  if (blockNumber > 2 && (blockNumber+1)%4 == 0){
-      return 2;
-      }
-
-  //authentication of the desired block for access
-  byte status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
-
-  if (status != MFRC522::STATUS_OK) {
-     return 3;//return "3" as error message
-  }
-
-  //writing the block     
-  status = mfrc522.MIFARE_Write(blockNumber, arrayAddress, 16);
-  if (status != MFRC522::STATUS_OK) {
-     return 4;//return "4" as error message
-  }
-  
-}
 
 
 
-/**
- * reads data from blocks
- * from the rfid tags and store 
- * them in their designated variable
- */
-int readBlock(int blockNumber, byte arrayAddress[],String& store) 
-{
-  byte largestModulo4Number=blockNumber/4*4;
-  byte trailerBlock=largestModulo4Number+3;
-
-  //authentication of the desired block for access
-  MFRC522::StatusCode status;
-  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
-  if (status != MFRC522::STATUS_OK) {
-         return 3;//return "3" as error message
-  }
-  
-  //reading a block       
-  byte buffersize = 18;//size of the buffer on which we are going to write
-  
-  status = mfrc522.MIFARE_Read(blockNumber, arrayAddress, &buffersize);
-  if (status != MFRC522::STATUS_OK) {
-          return 4;//return "4" as error message
-  }
-
-    for (uint8_t i = 0; i < 16; i++)
-      store+=char(arrayAddress[i]);
-}
 
 
 
@@ -231,38 +164,26 @@ bool verify_weight(byte param){
     { 
       delay(50);     
       while(!LoadCell.update());
-      if(LoadCell.getData()>2){
+      delay(20);
+      if(LoadCell.getData()>3){
         beep(20,100);
-        if(poke)
-        {
-          //msg to esp............................................................
-          values=("NOT_OK,");
-          Serial.print(values);
-          poke=false;    
-        }
         return false;
       }
     }
 
     //send acknowledgement to esp(OK).........
     halt=false;
-    return true;
-    poke=true;    
+    return true;   
   }
     
   float x=fetchedWeight.toFloat();
   if(abs(averageReading-x)<3)
   {
     totalWeight+=averageReading;
-    delay(200);
-    Serial.flush();
-    delay(200);
-    //send acknowledgement and fetched product ID to esp***********........................................
-    values=("ADD,"+fetchedPid);
-    Serial.print(values);
-    
-    LoadCell.tareNoDelay();
-    
+    //send acknowledgement and fetched product ID to esp***********
+    send_to_esp("ADD",fetchedPid);
+      
+    LoadCell.tareNoDelay();   
     return true;
   }
 
@@ -271,6 +192,23 @@ bool verify_weight(byte param){
   return false;
  
  }
+
+
+
+/**
+ * send data to esp
+ */
+
+void send_to_esp(String ack,String pid)
+{
+  delay(2000);
+  values=(ack+","+pid);
+  Serial.flush();
+  delay(500);
+  Serial.print(values);  
+}
+
+ 
 
 /*
  * code for initializing load cell and
@@ -293,6 +231,69 @@ void initialize_loadcell(){
     totalWeight=0;
   
 }
+
+
+
+/*
+*write on block 8 and 
+*mark the product as bought
+*(used for checks at the end of shopping)
+*/
+int writeBlock(int blockNumber, byte arrayAddress[]) 
+{
+  int largestModulo4Number=blockNumber/4*4;
+  int trailerBlock=largestModulo4Number+3;
+  //checking for trailer block
+  if (blockNumber > 2 && (blockNumber+1)%4 == 0){
+      return 2;
+      }
+
+  //authentication of the desired block for access
+  byte status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
+
+  if (status != MFRC522::STATUS_OK) {
+     return 3;//return "3" as error message
+  }
+
+  //writing the block     
+  status = mfrc522.MIFARE_Write(blockNumber, arrayAddress, 16);
+  if (status != MFRC522::STATUS_OK) {
+     return 4;//return "4" as error message
+  }
+  
+}
+
+/**
+ * reads data from blocks
+ * from the rfid tags and store 
+ * them in their designated variable
+ */
+int readBlock(int blockNumber, byte arrayAddress[],String& store) 
+{
+  byte largestModulo4Number=blockNumber/4*4;
+  byte trailerBlock=largestModulo4Number+3;
+
+  //authentication of the desired block for access
+  MFRC522::StatusCode status;
+  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
+  if (status != MFRC522::STATUS_OK) {
+         return 3;//return "3" as error message
+  }
+  
+  //reading a block       
+  byte buffersize = 18;//size of the buffer on which we are going to write
+  
+  status = mfrc522.MIFARE_Read(blockNumber, arrayAddress, &buffersize);
+  if (status != MFRC522::STATUS_OK) {
+          return 4;//return "4" as error message
+  }
+
+    for (uint8_t i = 0; i < 16; i++)
+      store+=char(arrayAddress[i]);
+}
+
+
+
 
 /**
  * checks if cards is getting read properly
