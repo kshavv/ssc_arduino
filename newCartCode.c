@@ -165,13 +165,14 @@ bool verify_weight(byte param){
       delay(50);     
       while(!LoadCell.update());
       delay(20);
-      if(LoadCell.getData()>3){
+      if(LoadCell.getData()>5){
         beep(20,100);
         return false;
       }
     }
 
     //send acknowledgement to esp(OK).........
+    
     halt=false;
     return true;   
   }
@@ -217,7 +218,7 @@ void send_to_esp(String ack,String pid)
 void initialize_loadcell(){
     
     LoadCell.begin();
-    float calibrationValue=217.63;
+    float calibrationValue=219.63;
     unsigned long stabilizingtime = 2000; // preciscion right after power-up can be improved by adding a few seconds of stabilizing time
     boolean _tare = true; //set this to false if you don't want tare to be performed in the next step
     LoadCell.start(stabilizingtime, _tare);
