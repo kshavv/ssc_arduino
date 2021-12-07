@@ -20,14 +20,11 @@ void setup() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    
   }
   
-  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH); 
-  delay(10);
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);   
   Firebase.pushString("carts/cart_101/status","connected");
-  
-  
+   
 }
 void loop() {
 

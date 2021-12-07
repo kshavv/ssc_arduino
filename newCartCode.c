@@ -129,12 +129,13 @@ bool get_load_cell_reading(){
   LoadCell.tareNoDelay();
   
   while(1){//stop the process till the load cell detects some weight
-    while(!LoadCell.update());
-    if(LoadCell.getData()>1){
+    
+    while(!LoadCell.update());   
+    if(LoadCell.getData()>3){
       break;
     }
   }
-    
+ 
   float loadCellReadings[10]; 
   for(i=0;i<30;i++)
   {        
@@ -178,7 +179,7 @@ bool verify_weight(byte param){
   }
     
   float x=fetchedWeight.toFloat();
-  if(abs(averageReading-x)<3)
+  if(abs(averageReading-x)<4)
   {
     totalWeight+=averageReading;
     //send acknowledgement and fetched product ID to esp***********
@@ -218,7 +219,7 @@ void send_to_esp(String ack,String pid)
 void initialize_loadcell(){
     
     LoadCell.begin();
-    float calibrationValue=219.63;
+    float calibrationValue=214.00;
     unsigned long stabilizingtime = 2000; // preciscion right after power-up can be improved by adding a few seconds of stabilizing time
     boolean _tare = true; //set this to false if you don't want tare to be performed in the next step
     LoadCell.start(stabilizingtime, _tare);
