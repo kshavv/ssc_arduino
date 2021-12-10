@@ -5,10 +5,16 @@ code for the hardware part of the project "smart shopping cart"
 download these libraries and add it to your code
 
 ## RFID 
-"**MFRC522**" from "https://github.com/miguelbalboa/rfid"
+```#include<MFRC522>``` 
+"https://github.com/miguelbalboa/rfid"
 
 ## LOAD CELL
-"**HX711_ADC**" from "https://github.com/olkal/HX711_ADC"
+```#include<HX711_ADC>```  
+"https://github.com/olkal/HX711_ADC"
+
+## ESP
+```#include <ESP8266WiFi.h>``` 
+
 
 
 
