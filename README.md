@@ -13,7 +13,9 @@ download these libraries and add it to your code
 "https://github.com/olkal/HX711_ADC"
 
 ## ESP
-```#include <ESP8266WiFi.h>``` 
+```#include <ESP8266WiFi.h>```
+```#include <FirebaseArduino.h>```
+
 " "
 
 
